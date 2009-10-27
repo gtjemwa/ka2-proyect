@@ -14,6 +14,7 @@ package wordominaton;
 import BDWorDomination.Cuadro;
 import BDWorDomination.Letra;
 import BDWorDomination.Persistencia;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,7 +107,7 @@ public class Login extends javax.swing.JPanel {
                         .addComponent(jPasswordField1)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jButton2))
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,7 +174,8 @@ public class Login extends javax.swing.JPanel {
                  for(int i=0; i<=14;i++){
                     c[j][i] = new Cuadro(j, i, new Letra(""));
                  }}
-                contenedor.iniciarJuego(c, usuario,  pass, url);
+                contenedor.iniciarMesaJugadores(jTextField1.getText());
+                //contenedor.iniciarJuego(c, usuario,  pass, url);
             }
             else{
                 setMessage("Usuario o contraseña incorrectos.");                
@@ -182,12 +184,8 @@ public class Login extends javax.swing.JPanel {
                 }
             
         }
-        catch (Exception e)
-        {   if (e.getCause().getMessage().equals("Connection refused: connect"))
-                JOptionPane.showMessageDialog(null, "El servidor de datos esta caido y no se puede establecer la conexión.","Error: " , JOptionPane.ERROR_MESSAGE);
-            else
-                JOptionPane.showMessageDialog(null, "No se puede acceder a la Internet y no se puede establecer la conexión.","Error: " , JOptionPane.ERROR_MESSAGE);
-            Thread.sleep(300L);
+        catch (SQLException ex)
+        {   Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
 
 

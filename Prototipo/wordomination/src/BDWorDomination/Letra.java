@@ -39,6 +39,9 @@ public class Letra implements Serializable {
 
 
     public Letra() {
+        this.letra = null;
+        this.urlimagen = "";
+        this.puntuacionletra = 0;
     }
 
     public Letra(String letra) {

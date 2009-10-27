@@ -4,7 +4,10 @@
 
 package wordominaton;
 
-import BDWorDomination.Cuadro;
+import BDWorDomination.*;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -12,10 +15,12 @@ import org.jdesktop.application.FrameView;
 import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * A través de esta clase se busca el logeo o la resgistración del usuario
@@ -28,17 +33,18 @@ public class WordominatonView extends FrameView {
         url="jdbc:mysql://186.84.6.33:3306/bdwordomination";
         usuario="netbeans";
         pass="adminadmin";
-        //Se crea el panel Login y se pone como primera pantalle
+        //Se crean todos los paneles que tendra el juego
         //en el WordominationView
         login = new Login(this);
         registrarse = new Registrarse(usuario,pass,url,this);
-        juego = new PlayWordomination(usuario,pass,url,this);
+        juego = new PlayWordomination(this);
+        mj = new MesaJugadores(this);
         setComponent(login);
         login.setVisible(true);
 
         initComponents();
 
-        this.cambUsuMenuItem.setEnabled(false);
+        this.abandonarMenu.setEnabled(false);
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
@@ -116,7 +122,7 @@ public class WordominatonView extends FrameView {
 
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-        cambUsuMenuItem = new javax.swing.JMenuItem();
+        abandonarMenu = new javax.swing.JMenuItem();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
@@ -132,11 +138,11 @@ public class WordominatonView extends FrameView {
         fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
         fileMenu.setName("fileMenu"); // NOI18N
 
-        cambUsuMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
-        cambUsuMenuItem.setText(resourceMap.getString("cambUsuMenuItem.text")); // NOI18N
-        cambUsuMenuItem.setName("cambUsuMenuItem"); // NOI18N
-        fileMenu.add(cambUsuMenuItem);
-        cambUsuMenuItem.getAccessibleContext().setAccessibleName(resourceMap.getString("jMenuItem1.AccessibleContext.accessibleName")); // NOI18N
+        abandonarMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
+        abandonarMenu.setText(resourceMap.getString("abandonarMenu.text")); // NOI18N
+        abandonarMenu.setName("abandonarMenu"); // NOI18N
+        fileMenu.add(abandonarMenu);
+        abandonarMenu.getAccessibleContext().setAccessibleName(resourceMap.getString("jMenuItem1.AccessibleContext.accessibleName")); // NOI18N
 
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(wordominaton.WordominatonApp.class).getContext().getActionMap(WordominatonView.class, this);
         exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
@@ -206,25 +212,101 @@ public class WordominatonView extends FrameView {
     }
 
     public void iniciarLogin(){
+        mj.setVisible(false);
         registrarse.setVisible(false);
         setComponent(login);        
         login.setVisible(true);
+        this.getFrame().setBounds(150, 50, 325, 250);
+        this.abandonarMenu.setEnabled(false);
     }
 
-    public void iniciarJuego(Cuadro[][] c, String usuario, String pass, String url){
+    public void iniciarMesaJugadores(String jugador){
+        Persistencia p = new Persistencia();
+        ArrayList al = new ArrayList();
+        boolean activarmesa = false;
+        int cantjug = 0;
+        try {
+            //Se obtienen la cantidad de jugadores en espera para jugar
+            al = p.getNomJugadores();
+            cantjug = al.size();
+
+            if (!al.contains(jugador)){
+            switch(cantjug){
+                case 0:{
+                    p.alterTableSQL("insert into mesajugadores values(1,'"+jugador+"',null,null,null,false);");
+                    mj.mostrarJugador(1, true);
+                    mj.mostrarJugador(2, false);
+                    mj.mostrarJugador(3, false);
+                    mj.mostrarJugador(4, false);
+                    mj.setJugador1("JUGADOR 1: "+jugador);
+                    activarmesa = true;break;}
+                case 1:{
+                    p.alterTableSQL("update mesajugadores set jugador2 = '"+jugador+"' where mesa = 1;");
+                    mj.mostrarJugador(1, true);
+                    mj.mostrarJugador(2, true);
+                    mj.mostrarJugador(3, false);
+                    mj.mostrarJugador(4, false);
+                    mj.setJugador1("JUGADOR 1: "+al.get(0));
+                    mj.setJugador2("JUGADOR 2: "+jugador);
+                    activarmesa = true;break;}
+                case 2:{
+                    p.alterTableSQL("update mesajugadores set jugador3 = '"+jugador+"' where mesa = 1;");
+                    mj.mostrarJugador(1, true);
+                    mj.mostrarJugador(2, true);
+                    mj.mostrarJugador(3, true);
+                    mj.mostrarJugador(4, false);
+                    mj.setJugador1("JUGADOR 1: "+al.get(0));
+                    mj.setJugador2("JUGADOR 2: "+al.get(1));
+                    mj.setJugador3("JUGADOR 3: "+jugador);
+                    activarmesa = true;break;}
+                case 3:{
+                    p.alterTableSQL("update mesajugadores set jugador4 = '"+jugador+"' where mesa = 1;");
+                    mj.mostrarJugador(1, true);
+                    mj.mostrarJugador(2, true);
+                    mj.mostrarJugador(3, true);
+                    mj.mostrarJugador(4, true);
+                    mj.setJugador1("JUGADOR 1: "+al.get(0));
+                    mj.setJugador2("JUGADOR 2: "+al.get(1));
+                    mj.setJugador3("JUGADOR 3: "+al.get(2));
+                    mj.setJugador4("JUGADOR 4: "+jugador);
+                    activarmesa = true;break;}
+                case 4:{
+                    JOptionPane.showMessageDialog(null, "LA MESA DE JUGADORES SE ENCUENTRA LLENA.","SOLICITUD RECHAZADA: " , JOptionPane.INFORMATION_MESSAGE);
+                break;}
+            }}
+            else{
+            JOptionPane.showMessageDialog(null, "ESTE USUARIO YA SE ENCUENTRA EN LA MESA DE JUGADORES","SOLICITUD RECHAZADA: " , JOptionPane.INFORMATION_MESSAGE);
+            }
+
+
+        } catch (SQLException ex) {
+            Logger.getLogger(WordominatonView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (activarmesa)
+        {login.setVisible(false);
+        setComponent(mj);
+        mj.setVisible(true);
+        this.getFrame().setBounds(150, 50, 670, 540);
+        this.abandonarMenu.setEnabled(false);
+        mj.iniciarObservador();
+        }
+
+
+    }
+
+    public void iniciarJuego(){
         login.setVisible(false);
         setComponent(juego);
         juego.setVisible(true);
         this.getFrame().setBounds(150, 50, 650, 660);
-        this.cambUsuMenuItem.setEnabled(true);
+        this.abandonarMenu.setEnabled(true);
         //this.getComponent().repaint();
-        juego.setCuadroRAM(c);
         juego.iniciarTurno();
     }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem cambUsuMenuItem;
+    private javax.swing.JMenuItem abandonarMenu;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel statusAnimationLabel;
@@ -245,6 +327,7 @@ public class WordominatonView extends FrameView {
     private Registrarse registrarse;
     private Login login;
     private PlayWordomination juego;
+    private MesaJugadores mj;
 
 
 }

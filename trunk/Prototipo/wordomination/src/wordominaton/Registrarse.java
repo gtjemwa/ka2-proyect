@@ -11,6 +11,8 @@
 
 package wordominaton;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
 import java.sql.*;
@@ -170,8 +172,7 @@ public class Registrarse extends javax.swing.JPanel {
                 setProgress(3, 0, 4);
 
                     ResultSet rs = s.executeQuery ("select * from usuario where " +
-                        "nombre='"+jTextField1.getText()+ "' and " +
-                        "pass='"+jPasswordField1.getText()+"'");
+                        "nombre='"+jTextField1.getText()+"'");
                     if (rs.first()){
                     setMessage("El usuario ya existe.");
                     Thread.sleep(150L);
@@ -191,11 +192,10 @@ public class Registrarse extends javax.swing.JPanel {
                        }
 
             
-            }catch (Exception e)
-            {   if (e.getCause().getMessage().equals("Connection refused: connect"))
-                JOptionPane.showMessageDialog(null, "El servidor de datos esta caido y no se puede establecer la conexión.","Error: " , JOptionPane.ERROR_MESSAGE);
-            else
-                JOptionPane.showMessageDialog(null, "No se puede acceder a la Internet y no se puede establecer la conexión.","Error: " , JOptionPane.ERROR_MESSAGE);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Registrarse.class.getName()).log(Level.SEVERE, null, ex);
+            }catch (SQLException e)
+            {JOptionPane.showMessageDialog(null, (String) e.getCause().getMessage(),"Error: " , JOptionPane.ERROR_MESSAGE);
             }
 
 

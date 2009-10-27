@@ -35,11 +35,8 @@ import org.jdesktop.application.Task;
 public class PlayWordomination extends javax.swing.JPanel {
 
     /** Creates new form PlayWordomination */
-    public PlayWordomination(String u, String c, String ur,WordominatonView con){
+    public PlayWordomination(WordominatonView con){
         initComponents();
-        usuario = u;
-        pass = c;
-        url = ur;
         contenedor = con;
         cuadro = new JLabel[15][15];
         letrasdisponibles = new JLabel[7];

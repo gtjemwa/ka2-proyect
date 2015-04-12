@@ -1,0 +1,1 @@
+Somos KA2, nuestro enfoque es realizar un juego, de gran calidad.
